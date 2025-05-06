@@ -13,7 +13,13 @@
 	},
 	"observability": {
 		"enabled": true
-	}
+	},
+	"kv_namespaces": [
+		{
+		  "binding": "KV",
+		  "id": "2fa52e6ac9da4fb5b42a5d146fd7b6e2",
+		}
+	  ]
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
@@ -26,6 +32,7 @@
 	 * databases, object storage, AI inference, real-time communication and more.
 	 * https://developers.cloudflare.com/workers/runtime-apis/bindings/
 	 */
+	
 
 	/**
 	 * Environment Variables

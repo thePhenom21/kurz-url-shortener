@@ -3,17 +3,16 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<script src="https://unpkg.com/htmx.org@2.0.4"></script>
 		<title>Hello, World!</title>
 	</head>
 	<body>
-		<h1 id="heading"></h1>
-		<script>
-			fetch('/message')
-				.then((resp) => resp.text())
-				.then((text) => {
-					const h1 = document.getElementById('heading');
-					h1.textContent = text;
-				});
-		</script>
+		<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; width: 100vw;">
+			
+			<form>
+				<input type="text" name="url" placeholder="Enter URL"/>
+				<button type="submit" hx-include="[name='url']" hx-post="/generate" hx-target="#heading" hx-swap="textContent">Send</button>
+			<h1 id="heading"></h1>
+		</div>
 	</body>
 </html>
