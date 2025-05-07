@@ -1,8 +1,10 @@
 import { env } from "cloudflare:workers";
 import { Hono } from "hono";
+import { sha256 } from "hono/utils/crypto";
 
 const app = new Hono<{ Bindings: CloudflareBindings }>();
 const kv = env.KV;
+
 
 app.post("/generate", async (c) => {
   const host = c.req.header("hx-current-url")
@@ -10,31 +12,17 @@ app.post("/generate", async (c) => {
   if (!url) {
     return c.text("URL is required", 400);
   }
-  
-  const keys = await kv.list();
-  const allValues = keys.keys.map((key) => key.name);
-  for (const key of allValues){
-    const value = await kv.get(key);
-    if (value === url) {
-      console.log("URL already exists");
-      return c.text(`${host}${key}`);
-    }
+
+  const preliminary_id = await sha256(url)
+  const id = preliminary_id ? preliminary_id.slice(0, 8) : null; // take the first 8 characters of the hash
+  if (!id) {
+    return c.text("ID is required", 400);
   }
-
-  const id = crypto.randomUUID().toString().substring(0, 5);
-
-  if(allValues.some((element) => element === id)){ {
-    const value = await kv.get(id);
-    if (value === url) {
-      return c.text(`${host}${id}`);
-    }
-    else{
-      console.log("ID already exists");
-      const newId = crypto.randomUUID().toString().substring(0, 5);
-      await kv.put(newId, url);
-      return c.text(`${host}${newId}`);
-    }
-  }}
+  // lets do a different approach -> hash the url
+  if(await kv.get(id)){
+    console.log("URL already exists");
+    return c.text(`${host}${id}`);
+  }
 
   await kv.put(id, url);
 
@@ -50,22 +38,16 @@ app.get("/:id", async (c) => {
 
   console.log(id);
 
-  const keys = await kv.list();
-  console.log(keys);
-  const allValues = keys.keys.map((key) => key.name);
-  console.log(allValues);
-
-  if (!allValues.includes(id)) {
-    return c.text("URL not found", 404);
-  }
   const url = await kv.get(id);
-  console.log(url);
 
+  
   if (!url) {
     return c.text("URL not found", 404);
   }
+  console.log(url);
 
-  return c.redirect(url!);
+
+  return c.redirect(url);
 });
 
 export default app;
